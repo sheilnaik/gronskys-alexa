@@ -87,8 +87,16 @@ def get_welcome_response():
     """
     session_attributes = {}
 
-    speech_output = "Welcome to the Gronsky's Alexa skill! To hear the pancake of the month, say 'Pancake of the Month'."
-    reprompt_text = "Sorry, I didn't catch that. Say 'Pancake of the Month' to hear the pancake of the month."
+    speech_output = (
+        "Welcome to the Gronsky's Alexa skill! "
+        "To hear some information about Gronsky's, say 'Tell me about Gronsky's.' "
+        "To hear Gronsky's pancake of the month, say 'Pancake of the Month'.")
+
+    reprompt_text = (
+        "Sorry, I didn't catch that. "
+        "Say 'Tell me about Gronsky's' to hear some information about Gronsky's or say 'Pancake of the Month' to hear the pancake of the month."
+        )
+    
     should_end_session = False
 
     return build_response(session_attributes, build_speechlet_response(speech_output, should_end_session))
@@ -103,13 +111,19 @@ def get_help_response():
     session_attributes = {}
 
     speech_output = (
-        "Welcome to the Gronsky's Alexa skill! "
-        "This skill will tell you the Pancake of the Month for Gronsky's Milk House, located in High Bridge, NJ. "
-        "To activate it, just say 'Pancake of the Month.'"
+        "Hello! "
+        "This skill will tell you information about Gronsky's, a restaurant located in High Bridge, NJ. "
+        "To hear some information about Gronsky's, say 'Tell me about Gronsky's.' "
+        "To hear Gronsky's pancake of the month, say 'Pancake of the Month'."
+        )
 
-    )
-    reprompt_text = "Sorry, I didn't catch that. Say 'Pancake of the Month' to hear the pancake of the month."
+    reprompt_text = (
+        "Sorry, I didn't catch that. "
+        "Say 'Tell me about Gronsky's' to hear some information about Gronsky's or say 'Pancake of the Month' to hear the pancake of the month."
+        )
+    
     should_end_session = False
+    
     return build_response(session_attributes, build_speechlet_response(speech_output, should_end_session))
 
 
@@ -174,19 +188,37 @@ def pancake_of_the_month(intent, session):
     # to the user.
     if correct_month:
         current_pancake = soup.find("div", { "class" : "av-subheading" }).text.strip()
-        speech_output = 'The pancake of the month for {month} is {pancake}'.format(
+        speech_output = "The pancake of the month for {month} is {pancake}. ".format(
             month=current_month.capitalize(),
             pancake=current_pancake
         )
     else:
         # If the website does not show the correct month, update the speech output to 
         # tell the user that the information isn't updated yet.
-        speech_output = "Sorry, but the pancake of the month isn't available yet! Try again at a later time."
+        speech_output = "Sorry, but the pancake of the month isn't available yet! Try again at a later time. "
 
-    # After the pancake of the month is spoken, end the session.
-    should_end_session = True
+    speech_output += "To hear more information about Gronsky's, say 'Tell me about Gronsky's'. Otherwise, say 'Stop' to quit."
+
+    # After the pancake of the month is spoken, keep the session open in case they want to hear something else.
+    should_end_session = False
 
     # Return an Alexa response with speech indicating the current pancake of the month.
+    return build_response(session_attributes, build_speechlet_response(speech_output, should_end_session))
+
+
+def about_gronskys(intent, session):
+    session_attributes = {}
+
+    speech_output = (
+        "Gronsky's Milk House is a family-owned ice cream store and restaurant located at 125 West Main Street in High Bridge, New Jersey. "
+        "It was founded in 1978 by Jackie and Steve Gronsky. "
+        "Originally a small convenience and ice cream store, Gronsky’s added a restaurant in 1988 to serve breakfast and lunch. "
+        )
+
+    speech_output += "To hear Gronsky's pancake of the month, say 'Pancake of the Month'. Otherwise, say 'Stop' to quit."
+
+    should_end_session = False
+
     return build_response(session_attributes, build_speechlet_response(speech_output, should_end_session))
 
 # ------------------------------------------------------------------------------
@@ -196,9 +228,6 @@ def pancake_of_the_month(intent, session):
 
 def on_intent(intent_request, session):
     """ Decide which function to run based on the intent triggered by the user's input.
-
-    Currently, this skill only has one skill-specific function: "Pancake of the Month",
-    triggered by the intent named "PancakeOfTheMonth".
 
     Note: The launch intent (triggered when the user says "Alexa, launch Gronsky's" is
           found in the on_launch() function.)
@@ -220,6 +249,8 @@ def on_intent(intent_request, session):
         response = get_help_response()
     elif intent_name == "AMAZON.CancelIntent" or intent_name == "AMAZON.StopIntent":
         response = handle_session_end_request()
+    elif intent_name == "AboutGronskys":
+        response = about_gronskys(intent, session)
     elif intent_name == "PancakeOfTheMonth":
         response = pancake_of_the_month(intent, session)
     else:
