@@ -7,9 +7,11 @@ from voicelabs import VoiceInsights
 import configparser
 
 
+# Read config file for Voice Insights API Key
 config = configparser.ConfigParser()
 config.read('config.txt')
 
+# Initialize Voice Insights analytics
 vi_appToken = config['voicelabs']['api_key']
 vi = VoiceInsights()
 
@@ -161,10 +163,6 @@ def pancake_of_the_month(intent, session):
 
     Returns:
         Alexa response with speech indicating the current pancake of the month.
-
-    Todo:
-        * Should the skill stop when the pancake of the month is heard, or should Alexa ask
-          if the user wants anything else?
     """
 
     session_attributes = {}
@@ -207,6 +205,18 @@ def pancake_of_the_month(intent, session):
 
 
 def about_gronskys(intent, session):
+    """ Give the user some simple information about Gronsky's
+
+    Just returns a response with some plain text describing Gronsky's.
+
+    Args:
+        intent: Dictionary containing the intent name ("AboutGronskys") and other data.
+        session: Dictionary containing data related to the current session
+
+    Returns:
+        Alexa response with specified information about Gronsky's
+    """
+
     session_attributes = {}
 
     speech_output = (
@@ -256,6 +266,7 @@ def on_intent(intent_request, session):
     else:
         raise ValueError("Invalid intent")
 
+    # Track user intent path using Voice Insights
     vi.track(intent_name, intent_request, response)
 
     return response
